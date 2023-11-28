@@ -1,0 +1,7 @@
+[masters]
+master ansible_host=.... ansible_ssh_pass=.... ansible_user=root
+
+[workers]
+node1 ansible_host=.... ansible_ssh_pass=....  ansible_user=root
+node2 ansible_host=.... ansible_ssh_pass=.... ansible_user=root
+

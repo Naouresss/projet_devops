@@ -1,0 +1,5 @@
+  - name: initialize the cluster
+      shell: kubeadm init
+      args:
+        chdir: $HOME
+        creates: cluster_initialized.txt

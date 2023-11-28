@@ -1,0 +1,43 @@
+- hosts: masters
+  become: yes
+  tasks:
+    - name: remove swap
+      shell: "swapoff -a"
+  tasks:
+    - name: initialize the cluster
+      shell: kubeadm init 
+      args:
+        chdir: $HOME
+        creates: cluster_initialized.txt
+
+    - name: Check if kubeadm has already run
+      stat:
+        path: "/etc/kubernetes/pki/ca.key"
+      register: kubeadm_ca
+
+    - name: Init cluster if needed
+      include_tasks: init.yml
+      when: not kubeadm_ca.stat.exists
+      run_once: yes
+
+    - name: create .kube directory
+      become: yes
+      become_user: root
+      file:
+        path: $HOME/.kube
+        state: directory
+        mode: 0755
+
+    - name: copies admin.conf to user's kube config
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        remote_src: yes
+        owner: root
+
+    - name: install Pod network
+      become: yes
+      become_user: root
+      shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+      args:
+        chdir: $HOME
